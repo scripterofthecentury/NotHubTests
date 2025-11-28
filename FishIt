@@ -7,6 +7,17 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 -------------------------------------------
 ----- =======[ GLOBAL FUNCTION ] =======
 -------------------------------------------
+-- FIX 1: Missing VirtualUser
+local VirtualUser = game:GetService("VirtualUser")
+
+-- FIX 2: Missing modules (if your game uses them)
+local Replion = require(ReplicatedStorage:FindFirstChild("Replion") or "")
+local ItemUtility = require(ReplicatedStorage:FindFirstChild("ItemUtility") or "")
+
+-- FIX 3: Fix invalid network paths
+local rodRemote = net:WaitForChild("RF"):WaitForChild("ChargeFishingRod")
+local miniGameRemote = net:WaitForChild("RF"):WaitForChild("RequestFishingMinigameStarted")
+local finishRemote = net:WaitForChild("RE"):WaitForChild("FishingCompleted")
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
