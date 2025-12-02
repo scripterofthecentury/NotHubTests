@@ -1,4 +1,4 @@
---- Nova.v1 ---
+--- Not Hub ---
 
 
 
@@ -36,7 +36,7 @@ end
 game.StarterGui:SetCore(
 	"SendNotification",
 	{
-		Title = "NovaV1",
+		Title = "Not Hub",
 		Text = "Loading . . .",
 	}
 )
@@ -45,19 +45,19 @@ game.StarterGui:SetCore(
 	"SendNotification",
 	{
 		Title = "Made By",
-		Text = "wussrunsfoxxy#1241",
+		Text = "Notty",
 	}
 )
 wait(1)
 game.StarterGui:SetCore(
 	"SendNotification",
 	{
-		Title = "NovaV1",
+		Title = "Not Hub",
 		Text = "Loaded!",
 	}
 )
 
---- ui lib and shit ---
+--- ui lib ---
 
     local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/slattisbabygirl/cattoware/main/Wcatto.lua"))()
     local NotifyLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/Dynissimo/main/Scripts/AkaliNotif.lua"))()
@@ -66,7 +66,7 @@ game.StarterGui:SetCore(
     Library.theme.accentcolor2 = Color3.fromRGB(255, 0, 0)
 
 --- TABS  ---
-    local Window = Library:CreateWindow("NOVAV1", Vector2.new(492, 598), Enum.KeyCode.RightShift)
+    local Window = Library:CreateWindow("Not Hub", Vector2.new(300, 400), Enum.KeyCode.RightShift)
     local AimingTab = Window:CreateTab("Aimlock")
 
 
@@ -1382,4 +1382,5 @@ end)
                 game.Players.LocalPlayer.Character.Head.face.Texture = "rbxassetid://6982506164"
             end)
             
+
              local AimingTab = Window:CreateTab("Made By Wuss")
