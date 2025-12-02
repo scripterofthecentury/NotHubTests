@@ -6819,12 +6819,9 @@ Library:Notification("Loaded lunar.vip in " .. Floor((tick() - loadingTime) * 10
 
 
 
+local Window = Library:Window({Name = "My GUI", Size = UDim2.new(0, 500, 0, 600)})
 
+local MainPage = Window:Page({Name = "Main"})
+local MainSection = MainPage:Section({Name = "Main Section"})
 
-
---[[
-
-NICE TRY POORON >_< :3333
-
-
-]]
+MainSection:Label({Text = "Hello! Your GUI works."})
