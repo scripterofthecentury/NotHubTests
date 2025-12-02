@@ -58,6 +58,361 @@ end
 
 local font = Enum.Font.Ubuntu;
 local Library = {};
+-- ========== Obsidian adapter for Lunar UI ==========
+-- Paste this immediately after: local Library = {};
+-- It monkeypatches Library to create an Obsidian-style UI while preserving Lunar flags & callbacks.
+
+do
+    -- load Obsidian (same repo used in Obsidian example)
+    local ok, Obsidian = pcall(function()
+        local repo = "https://raw.githubusercontent.com/deividcomsono/Obsidian/main/"
+        return loadstring(game:HttpGet(repo .. "Library.lua"))()
+    end)
+
+    if not ok or not Obsidian then
+        warn("[Lunar->Obsidian Adapter] Could not load Obsidian UI library. Adapter disabled.")
+        return
+    end
+
+    -- Create an Obsidian window (safe defaults)
+    local WindowParams = {
+        Title = "Lunar (Obsidian skin)",
+        Footer = "Lunar — UI adapted",
+        Icon = 95816097006870,
+        NotifySide = "Right",
+        ShowCustomCursor = true
+    }
+
+    local ObWindow = Obsidian:CreateWindow(WindowParams)
+    local Tabs = {
+        Main = ObWindow:AddTab("Main", "user"),
+        Key = ObWindow:AddKeyTab("Key System"),
+        ["UI Settings"] = ObWindow:AddTab("UI Settings", "settings"),
+        Rage = ObWindow:AddTab("Rage", "zap"),
+        Visuals = ObWindow:AddTab("Visuals", "eye"),
+        Misc = ObWindow:AddTab("Misc", "box")
+    }
+
+    -- helper: safe flags storage (reuse Library.Flags if present)
+    Library.Flags = Library.Flags or {}
+    local Flags = Library.Flags
+
+    -- utility to convert Lunar names -> Obsidian indices (unique keys)
+    local function make_idx(name)
+        return tostring(name):gsub("%s","_")
+    end
+
+    -- We'll create a Page/Section wrapper compatible with Lunar calls.
+    local PageMT = {}
+    local SectionMT = {}
+
+    -- Create pages factory similar enough to Lunar: Window:Page({Name="..."})
+    function Library:Window(params)
+        -- Return table mimicking Lunar.Window used by the rest of the script.
+        local W = {
+            ObWindow = ObWindow,
+            Pages = {},
+            Elements = {}
+        }
+
+        function W:Page(properties)
+            properties = properties or {}
+            local name = properties.Name or properties.name or "Page"
+            -- create a corresponding Obsidian tab (reuse existing if name matches)
+            local tab = Tabs[name] or ObWindow:AddTab(name, "file")
+            Tabs[name] = tab
+
+            local page = {
+                Name = name,
+                Window = W,
+                Open = false,
+                Sections = {},
+                Elements = {}
+            }
+            setmetatable(page, { __index = PageMT })
+
+            -- simple Page:Weapon mimic (kept minimal)
+            function page:Weapon(props) -- minimal no-op to stay compatible
+                props = props or {}
+                local weapon = {
+                    Icon = props.Icon or props.icon or "",
+                    Window = self,
+                    Open = false,
+                    Sections = {},
+                }
+                function weapon:Section(props2)
+                    -- delegate to page:Add a normal section on the same tab
+                    return page:Section(props2)
+                end
+                return weapon
+            end
+
+            self.Pages[#self.Pages+1] = page
+            return page
+        end
+
+        return W
+    end
+
+    -- Page:Section -> returns Section object with methods Toggle/Slider/Button/Dropdown/Colorpicker/Textbox/Keybind
+    function PageMT:Section(props)
+        props = props or {}
+        local title = props.Name or props.name or "Section"
+        local side = (props.Side or props.side or "Left"):lower()
+
+        -- choose left/right groupbox on the tab
+        local tab = Tabs[self.Name] or ObWindow:AddTab(self.Name, "file")
+        Tabs[self.Name] = tab
+
+        local left = tab:AddLeftGroupbox(title)
+        local right = tab:AddRightGroupbox(title)
+
+        -- by default use left; respect props.Side
+        local groupbox = (side == "right") and right or left
+
+        local sec = {
+            Name = title,
+            Page = self,
+            Elements = {},
+            Groupbox = groupbox
+        }
+        setmetatable(sec, { __index = SectionMT })
+
+        self.Sections[#self.Sections+1] = sec
+        return sec
+    end
+
+    -- Section:Toggle
+    function SectionMT:AddToggle(idx, options)
+        -- Obsidian's API: group:AddToggle("id", { Text=..., Default=..., Callback=function(v) ... end })
+        local name = (type(idx) == "string" and idx) or (options and options.Name) or options and options.Text or "Toggle"
+        local id = make_idx(name)
+
+        options = options or {}
+        local default = options.Default or options.state or options.def or false
+        Flags[options.Flag or name] = default
+
+        groupbox = self.Groupbox
+        local ok, toggle = pcall(function()
+            return groupbox:AddToggle(id, {
+                Text = name,
+                Default = default,
+                Tooltip = options.Tooltip,
+                Disabled = options.Disabled,
+                Callback = function(v)
+                    -- set lunar flag and call callback
+                    if options.Flag then Flags[options.Flag] = v end
+                    if options.Callback then
+                        pcall(options.Callback, v)
+                    elseif options.callback then
+                        pcall(options.callback, v)
+                    end
+                end
+            })
+        end)
+
+        -- return toggle-like object with :Keybind and :Colorpicker chaining used in Lunar code
+        local ret = {}
+        function ret:Keybind(kprops)
+            if toggle and toggle.SetKeybind then
+                -- Obsidian has keybind methods via library ToggleKeybinds; use Options/Toggles API
+                -- Minimal: store the keybind into flag
+                local kflag = (kprops and kprops.Flag) or (kprops and kprops.Name) or (name .. "_Key")
+                Flags[kflag] = false
+                -- If user provided Callback, call on key change
+                if kprops and kprops.Callback then
+                    -- not implementing internal key capture here; user can use Obsidian Toggles API after load
+                end
+            end
+            return ret
+        end
+        function ret:Colorpicker(cprops)
+            -- Attach colorpicker to the parent group; map to Flags
+            if cprops then
+                local cflag = cprops.Flag or (name .. "_Color")
+                Flags[cflag] = cprops.Default or Color3.fromRGB(255,0,0)
+                groupbox:AddToggle(id .. "_colorpicker_dummy", { Text = name .. " color", Default = false, Callback = function() end })
+                -- Note: Obsidian AddColorPicker is usually chained off Toggle in examples. Use Options/Toggles later if needed.
+            end
+            return ret
+        end
+
+        return ret
+    end
+
+    -- compatibility: allow both Section:Toggle({Name="..", Flag="..", Callback=...}) style
+    function SectionMT:Toggle(opts)
+        -- Lunar often calls: section:Toggle({Name="X", Flag="Y", Callback=function...})
+        local props = opts or {}
+        local name = props.Name or props.name or "Toggle"
+        return self:AddToggle(name, props)
+    end
+
+    -- Section:Slider
+    function SectionMT:Slider(opts)
+        local props = opts or {}
+        local name = props.Name or props.name or "Slider"
+        local id = make_idx(name)
+        local minv = props.Min or props.min or 0
+        local maxv = props.Max or props.max or 100
+        local default = props.Default or props.Default or props.def or 0
+        Flags[props.Flag or name] = default
+
+        local sliderObj
+        pcall(function()
+            sliderObj = self.Groupbox:AddSlider(id, {
+                Text = name,
+                Default = default,
+                Min = minv,
+                Max = maxv,
+                Rounding = props.Decimals or props.Rounding or 1,
+                Callback = function(v)
+                    if props.Flag then Flags[props.Flag] = v end
+                    if props.Callback then pcall(props.Callback, v) end
+                end
+            })
+        end)
+
+        return sliderObj or {
+            Set = function(_, v)
+                if props.Flag then Flags[props.Flag] = v end
+                if props.Callback then pcall(props.Callback, v) end
+            end,
+            SetVisible = function() end
+        }
+    end
+
+    -- Section:Button
+    function SectionMT:Button(props)
+        props = props or {}
+        local name = props.Text or props.Name or "Button"
+        local btnObj
+        pcall(function()
+            btnObj = self.Groupbox:AddButton({
+                Text = name,
+                Func = function()
+                    if props.Func then pcall(props.Func) end
+                end,
+                DoubleClick = props.DoubleClick or false,
+                Tooltip = props.Tooltip,
+                Disabled = props.Disabled or false
+            })
+        end)
+        return btnObj or {}
+    end
+
+    -- Section:Label
+    function SectionMT:Label(a,b,c)
+        -- Obsidian has AddLabel on groupbox
+        if type(a) == "table" then
+            self.Groupbox:AddLabel(a.Text or a)
+        else
+            if b ~= nil and type(b) == "boolean" then
+                self.Groupbox:AddLabel(a, b)
+            else
+                self.Groupbox:AddLabel(a)
+            end
+        end
+    end
+
+    -- Section:Dropdown
+    function SectionMT:Dropdown(props)
+        props = props or {}
+        local name = props.Name or props.name or "Dropdown"
+        local id = make_idx(name)
+        local values = props.Values or props.Options or props.options or {}
+        local default = props.Default or 1
+        if props.Flag then Flags[props.Flag] = props.Default or values[default] end
+
+        local dd
+        pcall(function()
+            dd = self.Groupbox:AddDropdown(id, {
+                Values = values,
+                Default = default,
+                Text = name,
+                Searchable = props.Searchable or false,
+                Callback = function(v)
+                    if props.Flag then Flags[props.Flag] = v end
+                    if props.Callback then pcall(props.Callback, v) end
+                end,
+                Disabled = props.Disabled or false,
+            })
+        end)
+
+        return dd or {}
+    end
+
+    -- Section:Textbox
+    function SectionMT:Textbox(props)
+        props = props or {}
+        local name = props.Name or props.Text or "Textbox"
+        local id = make_idx(name)
+        Flags[props.Flag or name] = props.Default or props.Default or ""
+
+        pcall(function()
+            self.Groupbox:AddInput(id, {
+                Default = props.Default or "",
+                Numeric = props.Numeric or false,
+                Finished = props.Finished or false,
+                ClearTextOnFocus = props.ClearTextOnFocus or false,
+                Text = name,
+                Placeholder = props.Placeholder or "",
+                Callback = function(v)
+                    if props.Flag then Flags[props.Flag] = v end
+                    if props.Callback then pcall(props.Callback, v) end
+                end
+            })
+        end)
+        return {}
+    end
+
+    -- Section:Colorpicker (best-effort)
+    function SectionMT:Colorpicker(props)
+        props = props or {}
+        local name = props.Name or "Colorpicker"
+        local default = props.Default or Color3.fromRGB(255,0,0)
+        local flag = props.Flag or name
+        Flags[flag] = default
+
+        -- Obsidian color pickers are usually chained on Toggles; we'll add a small dummy toggle + color pickers
+        self.Groupbox:AddToggle(make_idx(name) .. "_color_toggle", {
+            Text = name .. " (color)",
+            Default = false,
+            Callback = function() end
+        }):AddColorPicker(make_idx(name) .. "_cp1", {
+            Default = default,
+            Title = name,
+            Callback = function(c)
+                Flags[flag] = c
+                if props.Callback then pcall(props.Callback, c) end
+            end
+        })
+        return {}
+    end
+
+    -- Section:Keybind (best-effort placeholder)
+    function SectionMT:Keybind(props)
+        -- Obsidian's keybind handling is on Toggles/Options; provide placeholder that sets a flag
+        props = props or {}
+        local flag = props.Flag or props.Name or "Keybind"
+        Flags[flag] = props.Default or false
+        return {
+            Set = function(_, k) Flags[flag] = k end
+        }
+    end
+
+    -- Notification shim
+    function Library:Notification(msg, dur, color, pos)
+        -- Obsidian exposes a notification API; use ObWindow:AddNotification or ThemeManager:Notify etc.
+        pcall(function()
+            Obsidian:Notify("Lunar", msg or "", dur or 5)
+        end)
+    end
+
+    print("[Lunar->Obsidian Adapter] Loaded. UI elements will use Obsidian styling.\nPaste adapter right after 'local Library = {}' if you haven't already.")
+
+end
+-- ========== End adapter ==========
 local Library = {
 	Open = true;
 	Folders = {
@@ -6470,5 +6825,6 @@ Library:Notification("Loaded lunar.vip in " .. Floor((tick() - loadingTime) * 10
 --[[
 
 NICE TRY POORON >_< :3333
+
 
 ]]
