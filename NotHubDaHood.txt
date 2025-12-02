@@ -10765,7 +10765,7 @@ local function updateWatermark()
     local UptimeFormatted = string.format("%02d:%02d", math.floor(Uptime / 60), Uptime % 60)
     local GameName = getGameName(game.PlaceId)
 
-    local watermarkParts = {"matcha.tea"}
+    local watermarkParts = {"NotHub"}
     
     if getgenv().matcha.WatermarkShowExecutor then
         table.insert(watermarkParts, Executor)
