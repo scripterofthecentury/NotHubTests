@@ -66,7 +66,7 @@ game.StarterGui:SetCore(
     Library.theme.accentcolor2 = Color3.fromRGB(255, 0, 0)
 
 --- TABS  ---
-    local Window = Library:CreateWindow("Not Hub", Vector2.new(300, 400), Enum.KeyCode.RightShift)
+    local Window = Library:CreateWindow("Not Hub", Vector2.new(450, 400), Enum.KeyCode.RightShift)
     local AimingTab = Window:CreateTab("Aimlock")
 
 
@@ -1383,4 +1383,5 @@ end)
             end)
             
 
-             local AimingTab = Window:CreateTab("Made By Wuss")
+             local AimingTab = Window:CreateTab("Made By Notty")
+
