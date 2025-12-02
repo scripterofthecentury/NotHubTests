@@ -1,0 +1,1228 @@
+    getgenv().Quiet = {
+        ["Main"] = {
+            ["Intro"] = true,
+            ["UI"] = true,
+            ["Keybind"] = "V",
+            ["Visible Text"] = true
+        },
+        ["Triggerbot"] = {
+            ["Enabled"] = true,
+            ["Key"] = "T",
+            ["Toggle"] = true,
+            ["Hold"] = false,
+            ["Delay"] = 0.1,
+            ["Distance"] = 150,
+            ["CheckTeam"] = false,
+            ["CheckKnocked"] = true,
+            ["VisibilityCheck"] = true
+        },
+        ["UITitle"] = {
+            ["Text"] = "xdx",
+            ["Extension"] = {
+                ["Fringe"] = "[",
+                ["End"] = "]"
+            },
+            ["Size"] = 13
+        },
+        ["Size"] = {
+            ["X"] = 10 * 10,
+            ["Y"] = 10 * 1
+        },
+        ["Color"] = {
+            ["Inline"] = Color3.fromRGB(101, 72, 255),
+            ["Outline"] = Color3.fromRGB(0, 0, 0)
+        },
+        ["Fade Speed"] = {
+            ["Intro"] = 0.1,
+            ["Outro"] = 0.01
+        },
+        ["Misc"] = {
+            ["Check"] = {
+                ["TeamCheck"] = false,
+                ["PlayerKnockCheck"] = true,
+                ["VisCheck"] = true,
+                ["Resolver"] = false
+            },
+            ["FOV"] = {
+                ["Esp"] = {
+                    ["Enabled"] = true,
+                    ["Keybind"] = "T",
+                    ["Radius"] = 700,
+                    ["Style"] = "Circle",
+                    ["BoxSize"] = {
+                        ["X"] = 500,
+                        ["Y"] = 500
+                    },
+                    ["Inline"] = {
+                        ["Transparency"] = 0.4,
+                        ["Color"] = Color3.fromRGB(255, 255, 255)
+                    },
+                    ["Outline"] = {
+                        ["Transparency"] = 0.65,
+                        ["Color"] = Color3.fromRGB(255, 255, 255)
+                    },
+                    ["Control"] = {
+                        ["Stick To Target"] = false,
+                        ["ShowClosestPoint"] = true
+                    }
+                }
+            }
+        },
+        ["Aimbot"] = {
+            ["Panel"] = {
+                ["Enabled"] = true,
+                ["Keybind"] = {
+                    ["Enabled"] = "F",
+                    ["Disabled"] = "G"
+                },
+                Key = 'B',
+                ["HitPart"] = {
+                    ["Target"] = "HumanoidRootPart",
+                    ["Revaluate"] = {
+                        ["Enabled"] = false,
+                        ["Origin"] = "Humanoid"
+                    }
+                },
+                ["Prediction"] = {
+                    ["Enabled"] = true,
+                    ["Amount"] = 10
+                },
+                ["Assist"] = {
+                    ["Enabled"] = true,
+                    ["Amount"] = 40
+                },
+                ["Panel"] = {
+                    ["Method"] = "Camera",
+                    ["Target"] = false,
+                    ["Lerp"] = {
+                        ["Type"] = "Linear",
+                        ["Direction"] = "In"
+                    }
+                }
+            }
+        },
+        ["Silent"] = {
+            ["Redirection"] = {
+                ["Info"] = {
+                    ["Enabled"] = true,
+                    ["Keybind"] = "E"
+                },
+                ["Extension"] = {
+                    ["Fringe"] = "[",
+                    ["End"] = "]"
+                },
+                ["HitPart"] = {
+                    ["Target"] = "Head",
+                    ["Revaluate"] = {
+                        ["Enabled"] = true,
+                        ["Origin"] = "Humanoid"
+                    },
+                    ["Validated Part"] = {"HumanoidRootPart", "Head"}
+                },
+                ["HitChance"] = {
+                    ["Enabled"] = true,
+                    ["Amount"] = 100
+                },
+                ["Prediction"] = {
+                    ["Enabled"] = true,
+                    ["Amount"] = 0
+                }, 
+                ["AntiCurve"] = {
+                    ["Enabled"] = true,
+                    ["X"] = 0,
+                    ["Y"] = 0,
+                    ["Z"] = 0
+                },
+                ["Visualizetarget"] = {
+                    ["Enabled"] = true,
+                    ["Tracer"] = {
+                        ["Enabled"] = true,
+                        ["Key"] = "Y",
+                        ["Color"] = Color3.fromRGB(255, 255, 255),
+                        ["Thickness"] = 1,
+                        ["Transparency"] = 1
+                    }
+                }
+            }
+        },
+        ["WalkSpeed"] = {
+            ["Options"] = {
+                ["Enabled"] = true,
+                ["Speed"] = 300,
+                ["Keybind"] = "X",
+                ["AutoEmote"] = false,
+                ["EmoteDelay"] = 0.15,
+                ["EmoteKey"] = "Period",
+                ["EmoteSlot"] = "1"
+            }
+        },
+        ["Camlock"] = {
+            ["Enabled"] = false,
+            ["Key"] = "Q",
+            ["Toggle"] = true,
+            ["Prediction"] = {
+                ["Enabled"] = true,
+                ["Amount"] = 0.135
+            },
+            ["Smoothness"] = {
+                ["Enabled"] = true,
+                ["Amount"] = 0.055
+            },
+            ["HitPart"] = "HumanoidRootPart",
+            ["Shake"] = {
+                ["Enabled"] = true,
+                ["X"] = 3,
+                ["Y"] = 3,
+                ["Z"] = 3
+            },
+            ["AimAssist"] = {
+                ["Enabled"] = true,
+                ["Strength"] = 0.35,
+                ["SlowSensitivity"] = true,
+                ["SlowAmount"] = 0.5
+            }
+        },
+    }
+    if not LPH_OBFUSCATED then
+        LPH_JIT_MAX = function(...)
+            return (...)
+        end
+        LPH_JIT_ULTRA = function(...)
+            return (...)
+        end
+    end
+
+
+    LPH_JIT_MAX(
+        function()
+            local Drawing, FromRGB = Drawing.new, Color3.fromRGB
+            local UIS, Players, MPS, RunService, Camera, Tween =
+                game:GetService("UserInputService"),
+                game:GetService("Players"),
+                game:GetService("MarketplaceService"),
+                game:GetService("RunService"),
+                game:GetService("Workspace").CurrentCamera,
+                {}
+            function Direction(Value, Two)
+                return Vector2.new(Value / Quiet["Size"].X, Two / Quiet["Size"].Y)
+            end
+            local cam = workspace.CurrentCamera
+            local x = cam.ViewportSize.X
+            local y = cam.ViewportSize.Y
+            local newx = math.floor(x * 0.51)
+            local newy = math.floor(y * 0.44)
+            local Title = Drawing("Text")
+            local Value = Drawing("Text")
+            local Part = Drawing("Text")
+            if Quiet["Main"]["Intro"] == true then
+                -- Create the intro GUI
+                local Intro = Instance.new("ScreenGui")
+                Intro.Name = "QuietIntro"
+                Intro.Parent = game.CoreGui
+                
+                -- Create background frame
+                local Background = Instance.new("Frame")
+                Background.Size = UDim2.new(1, 0, 1, 0)
+                Background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+                Background.BackgroundTransparency = 0
+                Background.Parent = Intro
+                
+                -- Create stick figures container
+                local StickFigures = Instance.new("Frame")
+                StickFigures.Size = UDim2.new(0.4, 0, 0.4, 0)
+                StickFigures.Position = UDim2.new(0.3, 0, 0.3, 0)
+                StickFigures.BackgroundTransparency = 1
+                StickFigures.Parent = Background
+                
+                -- Function to create a stick figure
+                local function CreateStickFigure(position, color)
+                    local container = Instance.new("Frame")
+                    container.Size = UDim2.new(0.15, 0, 0.4, 0)
+                    container.Position = position
+                    container.BackgroundTransparency = 1
+                    container.Parent = StickFigures
+
+                    -- Head
+                    local head = Instance.new("Frame")
+                    head.Size = UDim2.new(0.2, 0, 0.2, 0)
+                    head.Position = UDim2.new(0.4, 0, 0, 0)
+                    head.BackgroundColor3 = color
+                    head.Parent = container
+
+                    -- Body
+                    local body = Instance.new("Frame")
+                    body.Size = UDim2.new(0.1, 0, 0.4, 0)
+                    body.Position = UDim2.new(0.45, 0, 0.2, 0)
+                    body.BackgroundColor3 = color
+                    body.Parent = container
+
+                    -- Arms
+                    local leftArm = Instance.new("Frame")
+                    leftArm.Size = UDim2.new(0.3, 0, 0.1, 0)
+                    leftArm.Position = UDim2.new(0.15, 0, 0.25, 0)
+                    leftArm.BackgroundColor3 = color
+                    leftArm.Parent = container
+
+                    local rightArm = Instance.new("Frame")
+                    rightArm.Size = UDim2.new(0.3, 0, 0.1, 0)
+                    rightArm.Position = UDim2.new(0.55, 0, 0.25, 0)
+                    rightArm.BackgroundColor3 = color
+                    rightArm.Parent = container
+
+                    -- Legs
+                    local leftLeg = Instance.new("Frame")
+                    leftLeg.Size = UDim2.new(0.1, 0, 0.3, 0)
+                    leftLeg.Position = UDim2.new(0.35, 0, 0.6, 0)
+                    leftLeg.BackgroundColor3 = color
+                    leftLeg.Parent = container
+
+                    local rightLeg = Instance.new("Frame")
+                    rightLeg.Size = UDim2.new(0.1, 0, 0.3, 0)
+                    rightLeg.Position = UDim2.new(0.55, 0, 0.6, 0)
+                    rightLeg.BackgroundColor3 = color
+                    rightLeg.Parent = container
+
+                    return container
+                end
+
+                -- Create stick figures
+                local StickFigure1 = CreateStickFigure(UDim2.new(0.1, 0, 0.3, 0), Color3.fromRGB(101, 72, 255))
+                local StickFigure2 = CreateStickFigure(UDim2.new(0.6, 0, 0.3, 0), Color3.fromRGB(255, 255, 255))
+
+                -- Add weapon effects
+                local function CreateWeaponEffect(parent, side)
+                    local weapon = Instance.new("Frame")
+                    weapon.Size = UDim2.new(0.4, 0, 0.05, 0)
+                    weapon.Position = UDim2.new(side == "left" and -0.2 or 0.8, 0, 0.25, 0)
+                    weapon.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                    weapon.Parent = parent
+                    return weapon
+                end
+
+                local weapon1 = CreateWeaponEffect(StickFigure1, "right")
+                local weapon2 = CreateWeaponEffect(StickFigure2, "left")
+
+                -- Add glow effects
+                local function CreateGlow(parent)
+                    local glow = Instance.new("ImageLabel")
+                    glow.Size = UDim2.new(2, 0, 2, 0)
+                    glow.Position = UDim2.new(-0.5, 0, -0.5, 0)
+                    glow.BackgroundTransparency = 1
+                    glow.Image = "rbxassetid://131274595"
+                    glow.ImageColor3 = parent.BackgroundColor3
+                    glow.ImageTransparency = 0.8
+                    glow.Parent = parent
+                    return glow
+                end
+
+                -- Add glows to weapons
+                CreateGlow(weapon1)
+                CreateGlow(weapon2)
+                
+                -- Create logo text
+                local LogoText = Instance.new("TextLabel")
+                LogoText.Size = UDim2.new(0.5, 0, 0.1, 0)
+                LogoText.Position = UDim2.new(0.25, 0, 0.8, 0)
+                LogoText.BackgroundTransparency = 1
+                LogoText.Text = "QUIET"
+                LogoText.TextColor3 = Color3.fromRGB(101, 72, 255)
+                LogoText.TextSize = 48
+                LogoText.Font = Enum.Font.GothamBold
+                LogoText.Parent = Background
+                
+                -- Create discord text
+                local DiscordText = Instance.new("TextLabel")
+                DiscordText.Size = UDim2.new(0.5, 0, 0.05, 0)
+                DiscordText.Position = UDim2.new(0.25, 0, 0.9, 0)
+                DiscordText.BackgroundTransparency = 1
+                DiscordText.Text = "discord.gg/quietcc"
+                DiscordText.TextColor3 = Color3.fromRGB(255, 255, 255)
+                DiscordText.TextSize = 24
+                DiscordText.Font = Enum.Font.Gotham
+                DiscordText.Parent = Background
+                DiscordText.TextTransparency = 1
+                
+                -- Play roar sound
+                local RoarSound = Instance.new("Sound")
+                RoarSound.SoundId = "rbxassetid://6545997667" -- Epic roar sound
+                RoarSound.Volume = 0.5
+                RoarSound.Parent = game.CoreGui
+                RoarSound:Play()
+                
+                -- Animate stick figures
+                local TweenService = game:GetService("TweenService")
+                
+                -- Create hit effect
+                local function CreateHitEffect(position)
+                    local effect = Instance.new("ImageLabel")
+                    effect.Size = UDim2.new(0.2, 0, 0.2, 0)
+                    effect.Position = position
+                    effect.BackgroundTransparency = 1
+                    effect.Image = "rbxassetid://446111271"  -- Explosion effect
+                    effect.ImageColor3 = Color3.fromRGB(255, 0, 0)
+                    effect.ImageTransparency = 0
+                    effect.Parent = Background
+                    
+                    -- Animate the hit effect
+                    TweenService:Create(effect, TweenInfo.new(0.3), {
+                        Size = UDim2.new(0.4, 0, 0.4, 0),
+                        ImageTransparency = 1
+                    }):Play()
+                    
+                    task.delay(0.3, function()
+                        effect:Destroy()
+                    end)
+                end
+
+                -- Fight animation sequence
+                task.spawn(function()
+                    -- Initial pause
+                    task.wait(0.5)
+
+                    for i = 1, 2 do
+                        -- Figure 1 attack sequence
+                        TweenService:Create(StickFigure1, TweenInfo.new(0.2), {
+                            Position = UDim2.new(0.3, 0, 0.3, 0),
+                            Rotation = 15
+                        }):Play()
+                        
+                        task.wait(0.1)
+                        CreateHitEffect(UDim2.new(0.45, 0, 0.4, 0))
+                        
+                        -- Weapon flash effect
+                        TweenService:Create(weapon1, TweenInfo.new(0.1), {
+                            BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                        }):Play()
+                        
+                        task.wait(0.1)
+                        TweenService:Create(StickFigure1, TweenInfo.new(0.2), {
+                            Position = UDim2.new(0.1, 0, 0.3, 0),
+                            Rotation = 0
+                        }):Play()
+                        
+                        TweenService:Create(weapon1, TweenInfo.new(0.1), {
+                            BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                        }):Play()
+
+                        -- Figure 2 attack sequence
+                        task.wait(0.3)
+                        TweenService:Create(StickFigure2, TweenInfo.new(0.2), {
+                            Position = UDim2.new(0.4, 0, 0.3, 0),
+                            Rotation = -15
+                        }):Play()
+                        
+                        task.wait(0.1)
+                        CreateHitEffect(UDim2.new(0.25, 0, 0.4, 0))
+                        
+                        -- Weapon flash effect
+                        TweenService:Create(weapon2, TweenInfo.new(0.1), {
+                            BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                        }):Play()
+                        
+                        task.wait(0.1)
+                        TweenService:Create(StickFigure2, TweenInfo.new(0.2), {
+                            Position = UDim2.new(0.6, 0, 0.3, 0),
+                            Rotation = 0
+                        }):Play()
+                        
+                        TweenService:Create(weapon2, TweenInfo.new(0.1), {
+                            BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                        }):Play()
+                        
+                        task.wait(0.3)
+                    end
+
+                    -- Final clash
+                    TweenService:Create(StickFigure1, TweenInfo.new(0.3), {
+                        Position = UDim2.new(0.35, 0, 0.3, 0),
+                        Rotation = 30
+                    }):Play()
+                    
+                    TweenService:Create(StickFigure2, TweenInfo.new(0.3), {
+                        Position = UDim2.new(0.35, 0, 0.3, 0),
+                        Rotation = -30
+                    }):Play()
+                    
+                    task.wait(0.3)
+                    CreateHitEffect(UDim2.new(0.35, 0, 0.4, 0))
+                    
+                    -- Big flash effect
+                    local flash = Instance.new("Frame")
+                    flash.Size = UDim2.new(1, 0, 1, 0)
+                    flash.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    flash.BackgroundTransparency = 0
+                    flash.Parent = Background
+                    
+                    TweenService:Create(flash, TweenInfo.new(0.5), {
+                        BackgroundTransparency = 1
+                    }):Play()
+                    
+                    task.wait(0.5)
+                    flash:Destroy()
+                end)
+                
+                -- Fade in logo and discord text
+                task.wait(0.5)
+                TweenService:Create(LogoText, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+                task.wait(0.3)
+                TweenService:Create(DiscordText, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+                
+                -- Hold the animation
+                task.wait(2)
+                
+                -- Fade out everything
+                TweenService:Create(Background, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+                TweenService:Create(StickFigure1, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+                TweenService:Create(StickFigure2, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+                TweenService:Create(LogoText, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+                TweenService:Create(DiscordText, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+                
+                -- Clean up
+                task.wait(0.5)
+                Intro:Destroy()
+                RoarSound:Destroy()
+            end
+            wait(0.15)
+
+            local function Table()
+                local hitparts = Quiet.Silent.Redirection["HitPart"]["Validated Parts"]
+
+                Title.Position, Title.Size =
+                    Direction(Camera.ViewportSize.X + 800, Camera.ViewportSize.Y),
+                    Quiet["UITitle"].Size
+                Value.Position, Value.Size =
+                    Direction(Camera.ViewportSize.X, Camera.ViewportSize.Y + 400),
+                    Quiet["UITitle"].Size
+                Part.Position, Part.Size =
+                    Direction(Camera.ViewportSize.X + 800, Camera.ViewportSize.Y + 600),
+                    Quiet["UITitle"].Size
+
+                if Quiet["Main"]["UI"] then
+                    Title.Text, Title.Font =
+                        tostring(
+                            Quiet["UITitle"].Text ..
+                                " " ..
+                                    Quiet["UITitle"].Extension.Fringe ..
+                                        game.Stats.Workspace.Heartbeat:GetValueString() .. Quiet["UITitle"].Extension.End
+                        ),
+                        2
+                    Title.Visible, Title.Outline, Title.Color, Title.OutlineColor =
+                        Quiet["Main"]["Visible Text"],
+                        true,
+                        Quiet["Color"].Inline,
+                        Quiet["Color"].Outline
+
+                    Value.Font, Value.Visible, Value.Inline, Value.Color, Value.OutlineColor =
+                        2,
+                        Quiet["Main"]["Visible Text"],
+                        true,
+                        Quiet.Silent.Redirection,
+                        Quiet["Color"].Inline
+
+                    Part.Font, Part.Visible, Part.Inline, Part.Color, Part.OutlineColor =
+                        2,
+                        Quiet["Main"]["Visible Text"],
+                        true,
+                        Quiet.Silent.Redirection,
+                        Quiet["Color"].Inline
+
+                    if Quiet.Silent.Redirection["Info"].Enabled then
+                        Value.Text = "   " .. "Silent" .. " = " .. "On"
+                        Part.Text = tostring("HitPart" .." = " .. (Quiet.Silent["Redirection"]["HitPart"]["Target"]):lower())
+                        
+                        if isSpeedEnabled and enable then
+                            Part.Text = Part.Text .. "\n   Speed = " .. tostring(getgenv().Quiet.WalkSpeed.Options.DefaultSpeed)
+                        end
+                    else
+                        Part.Text = ""
+                        Value.Text = "   " .. "Silent" .. " = " .. "Off"
+                        
+                        if isSpeedEnabled and enable then
+                            Part.Text = "   Speed = " .. tostring(getgenv().Quiet.WalkSpeed.Options.DefaultSpeed)
+                        end
+                    end
+                else
+                end
+            end
+
+            local Utilitie = {}
+            Utilitie.Toggle = false
+
+            UIS.InputBegan:Connect(
+                function(Two, Input)
+                    if not Input then
+                        if Two.KeyCode.Name == Quiet["Main"]["Keybind"] then
+                            Utilitie.Toggle = not Utilitie.Toggle
+                            if Utilitie.Toggle then
+                                RunService:BindToRenderStep("Table!", 1, Table)
+                                for i = 0, 1, Quiet["Fade Speed"].Intro do
+                                    wait(0)
+                                    Title.Transparency = i
+                                    Value.Transparency = i
+                                    Part.Transparency = i
+                                end
+
+                                Quiet["Main"]["UI"] = true
+                                Quiet["Main"]["Visible Text"] = true
+                            elseif not Utilitie.Toggle then
+                                RunService:UnbindFromRenderStep("Table")
+                                Quiet["Main"]["UI"] = false
+
+                                Title.Transparency = 0.9
+                                Value.Transparency = 0.9
+                                Part.Transparency = 0.9
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.8
+                                Value.Transparency = 0.8
+                                Part.Transparency = 0.8
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.7
+                                Value.Transparency = 0.7
+                                Part.Transparency = 0.7
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.6
+                                Value.Transparency = 0.6
+                                Part.Transparency = 0.6
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.5
+                                Value.Transparency = 0.5
+                                Part.Transparency = 0.5
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.4
+                                Value.Transparency = 0.4
+                                Part.Transparency = 0.4
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.3
+                                Value.Transparency = 0.3
+                                Part.Transparency = 0.3
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.2
+                                Value.Transparency = 0.2
+                                Part.Transparency = 0.2
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.1
+                                Value.Transparency = 0.1
+                                Part.Transparency = 0.1
+                                wait(Quiet["Fade Speed"].Outro)
+                                Title.Transparency = 0.1
+                                Value.Transparency = 0.1
+                                Part.Transparency = 0.1
+                                wait(Quiet["Fade Speed"].Outro)
+
+                                Title.Transparency = 0
+                                Value.Transparency = 0
+                                Part.Transparency = 0
+                            end
+                        end
+                    end
+                end
+            )
+
+            WTS = (function(Object)
+                local ObjectVector = Camera:WorldToScreenPoint(Object.Position)
+                return Vector2.new(ObjectVector.X, ObjectVector.Y)
+            end)
+
+            local FOV = {}
+            FOV.MouseLink = Drawing("Circle")
+            FOV.ClosestPoint = Drawing("Circle")
+            FOV.Line = Drawing("Line")
+            FOV.LineOutline = Drawing("Line")
+            
+            -- Create both circle and box FOV elements
+            FOV.Circle = {
+                Outline = Drawing("Circle"),
+                Inline = Drawing("Circle")
+            }
+            
+            FOV.Box = {
+                Outline = Drawing("Square"),
+                Inline = Drawing("Square")
+            }
+            
+            -- Initialize Line objects
+            FOV.Line.Thickness = 3
+            FOV.Line.Transparency = 0.8
+            FOV.Line.Color = Color3.fromRGB(255, 255, 255)
+            FOV.Line.Visible = false
+
+            FOV.LineOutline.Thickness = 7
+            FOV.LineOutline.Transparency = 0.4
+            FOV.LineOutline.Color = Color3.fromRGB(255, 255, 255)
+            FOV.LineOutline.Visible = false
+            
+            -- Initialize closest point indicator
+            FOV.ClosestPoint.Radius = 4
+            FOV.ClosestPoint.Filled = true
+            FOV.ClosestPoint.Transparency = 1
+            FOV.ClosestPoint.Color = Color3.fromRGB(255, 0, 0)
+            FOV.ClosestPoint.Visible = false
+
+            -- Initialize MouseLink
+            FOV.MouseLink.Radius = 20
+            FOV.MouseLink.Thickness = 0.4
+            FOV.MouseLink.Filled = false
+            FOV.MouseLink.Transparency = 1
+            FOV.MouseLink.Color = Color3.fromRGB(255, 255, 255)
+            FOV.MouseLink.Visible = false
+
+            -- Initialize Circle FOV
+            FOV.Circle.Inline.Visible = false
+            FOV.Circle.Inline.Radius = Quiet.Misc.FOV.Esp.Radius
+            FOV.Circle.Inline.Transparency = Quiet.Misc.FOV.Esp.Inline.Transparency
+            FOV.Circle.Inline.Color = Quiet.Misc.FOV.Esp.Inline.Color
+            FOV.Circle.Inline.Thickness = 3
+            FOV.Circle.Inline.Filled = true
+
+            FOV.Circle.Outline.Visible = false
+            FOV.Circle.Outline.Radius = Quiet.Misc.FOV.Esp.Radius
+            FOV.Circle.Outline.Transparency = Quiet.Misc.FOV.Esp.Outline.Transparency
+            FOV.Circle.Outline.Color = Quiet.Misc.FOV.Esp.Outline.Color
+            FOV.Circle.Outline.Thickness = 4
+            FOV.Circle.Outline.Filled = false
+
+            -- Initialize Box FOV
+            FOV.Box.Inline.Visible = false
+            FOV.Box.Inline.Size = Vector2.new(Quiet.Misc.FOV.Esp.BoxSize.X, Quiet.Misc.FOV.Esp.BoxSize.Y)
+            FOV.Box.Inline.Transparency = Quiet.Misc.FOV.Esp.Inline.Transparency
+            FOV.Box.Inline.Color = Quiet.Misc.FOV.Esp.Inline.Color
+            FOV.Box.Inline.Thickness = 3
+            FOV.Box.Inline.Filled = true
+
+            FOV.Box.Outline.Visible = false
+            FOV.Box.Outline.Size = Vector2.new(Quiet.Misc.FOV.Esp.BoxSize.X, Quiet.Misc.FOV.Esp.BoxSize.Y)
+            FOV.Box.Outline.Transparency = Quiet.Misc.FOV.Esp.Outline.Transparency
+            FOV.Box.Outline.Color = Quiet.Misc.FOV.Esp.Outline.Color
+            FOV.Box.Outline.Thickness = 4
+            FOV.Box.Outline.Filled = false
+
+            -- Function to update FOV position
+            local function UpdateFOVPosition(position)
+                if Quiet.Misc.FOV.Esp.Style == "Circle" then
+                    FOV.Circle.Inline.Position = position
+                    FOV.Circle.Outline.Position = position
+                    FOV.Circle.Inline.Visible = Quiet.Misc.FOV.Esp.Enabled
+                    FOV.Circle.Outline.Visible = Quiet.Misc.FOV.Esp.Enabled
+                    FOV.Box.Inline.Visible = false
+                    FOV.Box.Outline.Visible = false
+                else
+                    FOV.Box.Inline.Position = position - (FOV.Box.Inline.Size / 2)
+                    FOV.Box.Outline.Position = position - (FOV.Box.Outline.Size / 2)
+                    FOV.Box.Inline.Visible = Quiet.Misc.FOV.Esp.Enabled
+                    FOV.Box.Outline.Visible = Quiet.Misc.FOV.Esp.Enabled
+                    FOV.Circle.Inline.Visible = false
+                    FOV.Circle.Outline.Visible = false
+                end
+            end
+
+            -- Function to get closest point on FOV
+            local function GetClosestPointOnFOV(center, target)
+                if Quiet.Misc.FOV.Esp.Style == "Circle" then
+                    local direction = (target - center).Unit
+                    return center + direction * FOV.Circle.Inline.Radius
+                else
+                    local halfSize = FOV.Box.Inline.Size / 2
+                    local relative = target - center
+                    local clamped = Vector2.new(
+                        math.clamp(relative.X, -halfSize.X, halfSize.X),
+                        math.clamp(relative.Y, -halfSize.Y, halfSize.Y)
+                    )
+                    return center + clamped
+                end
+            end
+
+            local GameInfo = game.PlaceId
+
+            local LocalPlayer = Players.LocalPlayer
+            local Mouse = LocalPlayer:GetMouse()
+
+            local IgnoreList = {LocalPlayer.Character, Camera}
+            local StickyTarget = nil  -- Add sticky target variable
+
+            local function PartVisible(Part)
+                if Quiet.Misc.Check["VisCheck"] and Part and Part.Head then
+                    local Hit =
+                        workspace:FindPartOnRayWithIgnoreList(
+                        Ray.new(Camera.CFrame.Position, Part.Head.Position - Camera.CFrame.Position),
+                        IgnoreList
+                    )
+                    if Hit and Hit:IsDescendantOf(Part) then
+                        return true
+                    end
+                    return false
+                else
+                    return true
+                end
+            end
+
+            function ClosestToCursor()
+                -- If we have a valid sticky target, keep using it
+                if StickyTarget and StickyTarget.Character and StickyTarget.Character:FindFirstChild("HumanoidRootPart") and
+                    (Quiet.Misc["Check"]["TeamCheck"] == true and (StickyTarget.Team ~= LocalPlayer.Team) or
+                        Quiet.Misc["Check"]["TeamCheck"] ~= true)
+                then
+                    local MouseLocation = UIS:GetMouseLocation()
+                    local Vector, IsVisible = Camera:WorldToViewportPoint(StickyTarget.Character.HumanoidRootPart.Position)
+                    
+                    -- Only check if target is still visible and valid
+                    if IsVisible and PartVisible(StickyTarget.Character) then
+                        return StickyTarget
+                    end
+                end
+
+                -- Only find new target if we don't have a sticky target
+                if not StickyTarget then
+                local Closest = nil
+                    local Distance = FOV.Circle.Inline.Radius
+                for i, v in pairs(Players:GetPlayers()) do
+                    if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") and
+                        (Quiet.Misc["Check"]["TeamCheck"] == true and (v.Team ~= LocalPlayer.Team) or
+                            Quiet.Misc["Check"]["TeamCheck"] ~= true)
+                    then
+                        local MouseLocation = UIS:GetMouseLocation()
+                        local Vector, IsVisible = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
+                        local Magnitude = (Vector2.new(Vector.X, Vector.Y) - Vector2.new(MouseLocation.X, MouseLocation.Y)).magnitude
+
+                        if Magnitude < Distance and IsVisible and PartVisible(v.Character) then
+                            Closest = v
+                            Distance = Magnitude
+                        end
+                    end
+                end
+
+                if GameInfo == 2788229376 and Quiet.Misc["Check"]["PlayerKnockCheck"] then
+                    if Closest and Closest.Character and not Closest.Character:FindFirstChild("GRABBING_CONSTRAINT") and
+                            not Closest.Character:FindFirstChild("BodyEffects")["K.O"].Value
+                    then
+                            StickyTarget = Closest
+                        return Closest
+                    end
+                    return nil
+                end
+                
+                if GameInfo ~= 2788229376 and Quiet.Misc["Check"]["PlayerKnockCheck"] then
+                    if Closest and Closest.Character and Closest.Character.Humanoid.Health > 0 then
+                            StickyTarget = Closest
+                        return Closest
+                    end
+                    return nil
+                end
+
+                    StickyTarget = Closest
+                return Closest
+                end
+                
+                return nil
+            end
+
+            local player = game:GetService("Players").LocalPlayer
+            local runService = game:GetService("RunService")
+            local defaultSpeed = 16
+            local isSpeedEnabled = false
+
+            -- Main speed update function
+            local function updateSpeed()
+                if player.Character and player.Character:FindFirstChild("Humanoid") then
+                    if isSpeedEnabled and Quiet.WalkSpeed.Options.Enabled then
+                        player.Character.Humanoid.WalkSpeed = Quiet.WalkSpeed.Options.Speed
+                        print("6443534534534:", Quiet.WalkSpeed.Options.Speed)
+                    end
+                end
+            end
+
+            -- Connect to RenderStepped for continuous updates
+            local speedConnection = runService.RenderStepped:Connect(updateSpeed)
+
+            -- Handle character respawning
+            player.CharacterAdded:Connect(function(character)
+                -- Wait for Humanoid to be available
+                character:WaitForChild("Humanoid")
+                -- Update speed immediately after respawn
+                updateSpeed()
+            end)
+
+            -- Handle keybind toggle
+            UIS.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode.Name == Quiet.WalkSpeed.Options.Keybind then
+                    isSpeedEnabled = not isSpeedEnabled
+                    print("x14512:", isSpeedEnabled)
+                    
+                    if isSpeedEnabled then
+                        print("2342323:", Quiet.WalkSpeed.Options.Speed)
+                        player.Character.Humanoid.WalkSpeed = Quiet.WalkSpeed.Options.Speed
+                        
+                        -- Trigger emote when enabling walkspeed
+                        if Quiet.WalkSpeed.Options.AutoEmote then
+                            local VirtualInputManager = game:GetService("VirtualInputManager")
+                            
+                            -- Send emote key
+                            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode[Quiet.WalkSpeed.Options.EmoteKey], false, game)
+                            task.wait(Quiet.WalkSpeed.Options.EmoteDelay)
+                            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode[Quiet.WalkSpeed.Options.EmoteKey], false, game)
+                            
+                            -- Select emote slot
+                            task.wait(Quiet.WalkSpeed.Options.EmoteDelay)
+                            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode[Quiet.WalkSpeed.Options.EmoteSlot], false, game)
+                            task.wait(Quiet.WalkSpeed.Options.EmoteDelay)
+                            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode[Quiet.WalkSpeed.Options.EmoteSlot], false, game)
+                        end
+                    else
+                        print("xdef")
+                        player.Character.Humanoid.WalkSpeed = defaultSpeed
+                    end
+                end
+            end)
+
+            -- Add toggle handler for silent aim
+            UIS.InputBegan:Connect(function(input, gameProcessed)
+                if not gameProcessed and input.KeyCode.Name == Quiet.Silent.Redirection.Info.Keybind then
+                    -- Toggle sticky target on/off
+                    if StickyTarget then
+                        StickyTarget = nil
+                    else
+                        -- Find new target when toggling on
+                        local MouseLocation = UIS:GetMouseLocation()
+                        local Closest = nil
+                        local Distance = FOV.Circle.Inline.Radius
+                        
+                        for i, v in pairs(Players:GetPlayers()) do
+                            if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                                local Vector, IsVisible = Camera:WorldToViewportPoint(v.Character.HumanoidRootPart.Position)
+                                local Magnitude = (Vector2.new(Vector.X, Vector.Y) - Vector2.new(MouseLocation.X, MouseLocation.Y)).magnitude
+
+                                if Magnitude < Distance and IsVisible and PartVisible(v.Character) then
+                                    Closest = v
+                                    Distance = Magnitude
+                                end
+                            end
+                        end
+                        
+                        if Closest then
+                            StickyTarget = Closest
+                        end
+                    end
+                end
+            end)
+
+            local Meta = getrawmetatable(game)
+            local backupindex = Meta.__index
+            setreadonly(Meta, false)
+
+            Meta.__index = function(t, k)
+                if k:lower() == "hit" and Quiet.Silent.Redirection.Info.Enabled then
+                    local TargetPlayer = ClosestToCursor()
+                    
+                    if TargetPlayer and TargetPlayer.Character then
+                        -- Check hit chance
+                        local Chance = not Quiet.Silent.Redirection.HitChance.Enabled or 
+                                    (Quiet.Silent.Redirection.HitChance.Amount >= math.random(1, 100))
+                        
+                        if not Chance then
+                            return backupindex(t, k)
+                        end
+
+                        -- Get target part and validate
+                        local Part = TargetPlayer.Character:FindFirstChild(Quiet.Silent["Redirection"]["HitPart"].Target)
+                        if not Part then
+                            -- Fallback to validated parts if primary target not found
+                            for _, validPart in ipairs(Quiet.Silent.Redirection["HitPart"]["Validated Part"]) do
+                                Part = TargetPlayer.Character:FindFirstChild(validPart)
+                                if Part then break end
+                            end
+                        end
+
+                        if Part then
+                            -- Apply anti-curve to bullet trajectory
+                            if Quiet.Silent.Redirection.AntiCurve.Enabled then
+                                local AntiCurve = CFrame.Angles(
+                                    math.rad(Quiet.Silent.Redirection.AntiCurve.X),
+                                    math.rad(Quiet.Silent.Redirection.AntiCurve.Y),
+                                    math.rad(Quiet.Silent.Redirection.AntiCurve.Z)
+                                )
+                                
+                                -- Get the direction from camera to target
+                                local Direction = (Part.Position - Camera.CFrame.Position).Unit
+                                
+                                -- Apply anti-curve rotation to the direction
+                                Direction = AntiCurve:VectorToWorldSpace(Direction)
+                                
+                                -- Create a new CFrame at the target position with the adjusted direction
+                                return CFrame.new(Part.Position) * CFrame.fromMatrix(Vector3.new(), Direction:Cross(Vector3.new(0, 1, 0)), Vector3.new(0, 1, 0), Direction)
+                            else
+                                -- Return the part's CFrame directly if anti-curve is disabled
+                            return Part.CFrame
+                            end
+                        end
+                    end
+                end
+                return backupindex(t, k)
+            end
+
+            LocalPlayer.Chatted:Connect(
+                function(message)
+                    if Quiet.ChatCommands.Enabled then
+                        local args = string.split(message, " ")
+                        if args[1] == Quiet.ChatCommands.Fov and args[2] ~= nil then
+                            Quiet.Misc.FOV.Esp.Radius = tonumber(args[2])
+                        end
+
+                        if Quiet.ChatCommands.Enabled then
+                            local args = string.split(message, " ")
+                            if args[1] == Quiet.ChatCommands.Prediction and args[2] ~= nil then
+                                Quiet.Silent.Redirection.Prediction.Amount = tonumber(args[2])
+                            end
+                        end
+                    end
+                end
+            )
+
+
+            local MouseLoop =
+                RunService.Heartbeat:Connect(
+                function()
+                    local MouseLocation = UIS:GetMouseLocation()
+
+                    -- Only use StickyTarget for visualization
+                    if Quiet.Misc.FOV["Esp"]["Control"]["Stick To Target"] and StickyTarget and StickyTarget.Character then
+                        local Root = StickyTarget.Character[Quiet.Silent["Redirection"]["HitPart"].Target]
+                        local RootToViewportPoint, IsVisible = Camera.WorldToViewportPoint(Camera, Root.Position)
+
+                        UpdateFOVPosition(Vector2.new(RootToViewportPoint.X, RootToViewportPoint.Y))
+                    else
+                        UpdateFOVPosition(Vector2.new(MouseLocation.X, MouseLocation.Y))
+                    end
+
+                    -- Update closest point visualization only for sticky target
+                    if Quiet.Misc.FOV.Esp.Control.ShowClosestPoint and StickyTarget and StickyTarget.Character then
+                        local Root = StickyTarget.Character[Quiet.Silent["Redirection"]["HitPart"].Target]
+                        local RootToViewportPoint, IsVisible = Camera.WorldToViewportPoint(Camera, Root.Position)
+                        local TargetPos = Vector2.new(RootToViewportPoint.X, RootToViewportPoint.Y)
+                        local ClosestPoint = GetClosestPointOnFOV(MouseLocation, TargetPos)
+                        
+                        FOV.ClosestPoint.Position = ClosestPoint
+                        FOV.ClosestPoint.Visible = IsVisible and Quiet.Misc.FOV.Esp.Enabled
+                    else
+                        FOV.ClosestPoint.Visible = false
+                    end
+
+                    -- Tracer Line Logic - only for sticky target
+                    if Quiet.Silent.Redirection.Info.Enabled and Quiet.Silent.Redirection.Visualizetarget.Tracer.Enabled and StickyTarget and StickyTarget.Character then
+                        local Root = StickyTarget.Character[Quiet.Silent["Redirection"]["HitPart"].Target]
+                        local RootToViewportPoint, IsVisible = Camera.WorldToViewportPoint(Camera, Root.Position)
+                        
+                        FOV.Line.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+                        FOV.Line.To = Vector2.new(RootToViewportPoint.X, RootToViewportPoint.Y)
+                        FOV.Line.Color = Quiet.Silent.Redirection.Visualizetarget.Tracer.Color
+                        FOV.Line.Thickness = Quiet.Silent.Redirection.Visualizetarget.Tracer.Thickness
+                        FOV.Line.Transparency = Quiet.Silent.Redirection.Visualizetarget.Tracer.Transparency
+                        FOV.Line.Visible = true
+
+                        FOV.LineOutline.From = FOV.Line.From
+                        FOV.LineOutline.To = FOV.Line.To
+                        FOV.LineOutline.Visible = true
+                    else
+                        FOV.Line.Visible = false
+                        FOV.LineOutline.Visible = false
+                    end
+
+                    -- Visualize target - only for sticky target
+                    if Quiet.Silent.Redirection.Info.Enabled and Quiet.Silent.Redirection.Visualizetarget.Enabled and StickyTarget and StickyTarget.Character then
+                        local Root = StickyTarget.Character[Quiet.Silent["Redirection"]["HitPart"].Target]
+                        local RootToViewportPoint, IsVisible = Camera.WorldToViewportPoint(Camera, Root.Position)
+                        FOV.MouseLink.Color = Quiet.Silent["Redirection"]
+                        FOV.MouseLink.Transparency = 1
+                        FOV.MouseLink.Thickness = 0.4
+                        FOV.MouseLink.Filled = false
+                        FOV.MouseLink.Radius = 20
+                        FOV.MouseLink.Visible = true
+                        FOV.MouseLink.Position = Vector2.new(RootToViewportPoint.X, RootToViewportPoint.Y)
+                    else
+                        FOV.MouseLink.Position = Vector2.new()
+                        FOV.MouseLink.Visible = false
+                    end
+                end
+            )
+
+            local function GetClosestPlayer()
+                local MaxDist = math.huge
+                local Target = nil
+                
+                for _, v in pairs(Players:GetPlayers()) do
+                    if v ~= LocalPlayer and v.Character and v.Character:FindFirstChild("Humanoid") and 
+                    v.Character.Humanoid.Health > 0 and v.Character:FindFirstChild(Quiet.Camlock.HitPart) then
+                        local ScreenPos, OnScreen = Camera:WorldToScreenPoint(v.Character[Quiet.Camlock.HitPart].Position)
+                        local Distance = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(ScreenPos.X, ScreenPos.Y)).Magnitude
+                        
+                        if Distance < MaxDist and OnScreen then
+                            MaxDist = Distance
+                            Target = v
+                        end
+                    end
+                end
+                
+                return Target
+            end
+
+            local Target
+            local Enabled = false
+            local Holding = false
+
+            -- Handle both toggle and hold modes for camlock
+            UIS.InputBegan:Connect(function(Input)
+                if Input.KeyCode == Enum.KeyCode[Quiet.Camlock.Key] then
+                    if Quiet.Camlock.Toggle then
+                        Enabled = not Enabled
+                        if Enabled then
+                            Target = GetClosestPlayer()
+                        else
+                            Target = nil
+                        end
+                    else
+                        Holding = true
+                        Target = GetClosestPlayer()
+                    end
+                end
+                
+                if Input.KeyCode == Enum.KeyCode[Quiet.Silent.Redirection.Visualizetarget.Tracer.Key] then
+                    Quiet.Silent.Redirection.Visualizetarget.Tracer.Enabled = not Quiet.Silent.Redirection.Visualizetarget.Tracer.Enabled
+                end
+            end)
+
+            UIS.InputEnded:Connect(function(Input)
+                if Input.KeyCode == Enum.KeyCode[Quiet.Camlock.Key] and not Quiet.Camlock.Toggle then
+                    Holding = false
+                    Target = nil
+                end
+            end)
+
+            RunService.RenderStepped:Connect(function()
+                if (Enabled or Holding) and Target and Target.Character and Target.Character:FindFirstChild(Quiet.Camlock.HitPart) then
+                    local TargetPos = Target.Character[Quiet.Camlock.HitPart].Position
+                    
+                    if Quiet.Camlock.Prediction.Enabled then
+                        local Velocity = Target.Character[Quiet.Camlock.HitPart].Velocity
+                        local Distance = (Target.Character[Quiet.Camlock.HitPart].Position - Camera.CFrame.Position).Magnitude
+                        local TimeToTarget = Distance / 1000
+                        TargetPos = TargetPos + (Velocity * Quiet.Camlock.Prediction.Amount)
+                    end
+                    
+                    if Quiet.Camlock.Shake.Enabled then
+                        TargetPos = TargetPos + Vector3.new(
+                            math.random(-Quiet.Camlock.Shake.X, Quiet.Camlock.Shake.X) / 100,
+                            math.random(-Quiet.Camlock.Shake.Y, Quiet.Camlock.Shake.Y) / 100,
+                            math.random(-Quiet.Camlock.Shake.Z, Quiet.Camlock.Shake.Z) / 100
+                        )
+                    end
+
+                    local CameraPosition = Camera.CFrame.Position
+                    local TargetPosition = TargetPos
+                    
+                    -- Calculate target CFrame with improved aiming
+                    local TargetCFrame = CFrame.lookAt(CameraPosition, TargetPosition)
+                    
+                    -- Smoothly interpolate to target angles with improved logic
+                    if Quiet.Camlock.Smoothness.Enabled then
+                        local LerpAmount = Quiet.Camlock.Smoothness.Amount
+                        
+                        if Quiet.Camlock.AimAssist.Enabled then
+                            local ScreenPos, OnScreen = Camera:WorldToScreenPoint(TargetPosition)
+                            if OnScreen then
+                                local ScreenCenter = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+                                local Distance = (Vector2.new(ScreenPos.X, ScreenPos.Y) - ScreenCenter).Magnitude
+                                
+                                if Distance < 150 then
+                                    LerpAmount = LerpAmount * (1 + Quiet.Camlock.AimAssist.Strength)
+                                end
+                            end
+                        end
+                        
+                        -- Improved smooth camera movement
+                        local CurrentCFrame = Camera.CFrame
+                        local NewCFrame = CurrentCFrame:Lerp(TargetCFrame, LerpAmount)
+                        
+                        -- Apply rotation only, preserve original camera position
+                        Camera.CFrame = CFrame.new(CurrentCFrame.Position) * NewCFrame.Rotation
+                    else
+                        -- Direct camera rotation without changing position
+                        Camera.CFrame = CFrame.new(Camera.CFrame.Position) * TargetCFrame.Rotation
+                    end
+                end
+            end)
+
+            -- Add Triggerbot Variables
+            local TriggerEnabled = false
+            local LastShot = 0
+            local TriggerHolding = false
+
+            -- Add Triggerbot Toggle/Hold Handler
+            UIS.InputBegan:Connect(function(Input)
+                if Input.KeyCode == Enum.KeyCode[Quiet.Triggerbot.Key] and Quiet.Triggerbot.Enabled then
+                    if Quiet.Triggerbot.Hold then
+                        TriggerHolding = true
+                        TriggerEnabled = true
+                    else
+                        TriggerEnabled = not TriggerEnabled
+                    end
+                end
+            end)
+
+            UIS.InputEnded:Connect(function(Input)
+                if Input.KeyCode == Enum.KeyCode[Quiet.Triggerbot.Key] and Quiet.Triggerbot.Hold then
+                    TriggerHolding = false
+                    TriggerEnabled = false
+                end
+            end)
+
+            -- Add Triggerbot Logic
+            RunService.RenderStepped:Connect(function()
+                if TriggerEnabled and Quiet.Triggerbot.Enabled and (not Quiet.Triggerbot.Hold or TriggerHolding) then
+                    local MouseLocation = UIS:GetMouseLocation()
+                    local NearestPlayer = nil
+                    local ShortestDistance = Quiet.Triggerbot.Distance
+
+                    for _, Player in pairs(Players:GetPlayers()) do
+                        if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                            -- Team Check
+                            if Quiet.Triggerbot.CheckTeam and Player.Team == LocalPlayer.Team then
+                                continue
+                            end
+
+                            -- Knocked Check for Da Hood
+                            if Quiet.Triggerbot.CheckKnocked and game.PlaceId == 2788229376 then
+                                if Player.Character:FindFirstChild("GRABBING_CONSTRAINT") or 
+                                Player.Character:FindFirstChild("BodyEffects")["K.O"].Value then
+                                    continue
+                                end
+                            end
+
+                            local Vector, IsVisible = Camera:WorldToViewportPoint(Player.Character.HumanoidRootPart.Position)
+                            if IsVisible then
+                                -- Visibility Check
+                                if Quiet.Triggerbot.VisibilityCheck then
+                                    local Ray = Ray.new(Camera.CFrame.Position, (Player.Character.Head.Position - Camera.CFrame.Position).Unit * 500)
+                                    local Hit, Position = workspace:FindPartOnRayWithIgnoreList(Ray, {LocalPlayer.Character, Camera})
+                                    
+                                    if not Hit or not Hit:IsDescendantOf(Player.Character) then
+                                        continue
+                                    end
+                                end
+
+                                local Distance = (Vector2.new(Vector.X, Vector.Y) - MouseLocation).Magnitude
+                                if Distance < ShortestDistance then
+                                    ShortestDistance = Distance
+                                    NearestPlayer = Player
+                                end
+                            end
+                        end
+                    end
+
+                    if NearestPlayer and tick() - LastShot > Quiet.Triggerbot.Delay then
+                        mouse1click()
+                        LastShot = tick()
+                    end
+                end
+            end)
+        end
+    )()
+
+    getgenv().Loaded = true
