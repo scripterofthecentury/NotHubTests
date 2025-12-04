@@ -5394,8 +5394,13 @@ RunService.RenderStepped:Connect(function(deltaTime)
 
     time = time + deltaTime
 
+if not isMobile then
     aimContainer.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
+end
+
+if not isMobile then
     textLabel.Position = UDim2.new(0, mouse.X - 70, 0, mouse.Y + 50)
+end
 
     rotationProgress = (rotationProgress + currentRotationSpeed * deltaTime) % 1
     currentRotationSpeed = calculateRotationSpeed(rotationProgress)
