@@ -1,0 +1,495 @@
+-- Nil Hub (Obsidian rewrite)
+-- Rewritten by ChatGPT using Obsidian library
+-- Place this LocalScript in StarterPlayerScripts or execute in a supported executor
+
+-- Load Obsidian UI library
+local success, Obsidian = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/refs/heads/main/Library.lua"))()
+end)
+if not success or not Obsidian then
+    warn("Failed to load Obsidian library")
+    return
+end
+
+-- == Globals / Services ==
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Config and runtime tables
+local Config = {}
+local AllFuncs = {}
+local Threads = {}
+local ConfigFolder = "NilHub_Obsidian"
+local ConfigFile = ConfigFolder.."/"..tostring(LocalPlayer.UserId)..".json"
+
+-- ensure folder helpers (executors may provide these functions)
+local has_write = isfolder and writefile and isfile
+if has_write then
+    if not isfolder(ConfigFolder) then
+        pcall(makefolder, ConfigFolder)
+    end
+end
+
+-- basic save/load
+local function saveConfig()
+    if has_write then
+        pcall(function()
+            writefile(ConfigFile, HttpService:JSONEncode(Config))
+        end)
+    end
+end
+local function loadConfig()
+    if has_write and isfile(ConfigFile) then
+        local ok, data = pcall(function() return HttpService:JSONDecode(readfile(ConfigFile)) end)
+        if ok and type(data) == "table" then
+            Config = data
+        end
+    end
+end
+loadConfig()
+
+-- Notify using Obsidian's toast/notification if available
+local function Notify(title, content, duration)
+    duration = duration or 3
+    pcall(function()
+        if Obsidian.Notification then
+            Obsidian:Notify({Title = title or "Nil Hub", Content = content or "", Duration = duration})
+        else
+            print("Nil Hub:", title, content)
+        end
+    end)
+end
+
+-- Attempt to load FISHDATA from the original script if present in global
+local FISHDATA = _G.FISHDATA or {}
+-- If not present, provide a minimal fallback so UI works
+if next(FISHDATA) == nil then
+    FISHDATA = {
+        ["Largemouth Bass"] = {Price = 85, Rarity = "Common", Chance = 75, FavouriteBait = "Worm"},
+        ["Sea Bass"] = {Price = 95, Rarity = "Common", Chance = 75, FavouriteBait = "Squid"},
+    }
+end
+
+-- Utility helpers
+local function comma_value(val)
+    if type(val) ~= "number" and type(val) ~= "string" then return tostring(val) end
+    local s = tostring(val)
+    local n = s:reverse():gsub("(%d%d%d)", "%1,"):reverse()
+    return n:gsub('^,', '')
+end
+
+local function ExportValue(arg1, arg2)
+    return tonumber(string.format("%."..(arg2 or 1).."f", arg1))
+end
+
+-- Webhook sender (supports syn.request / http_request / request wrapper)
+local function sendWebhook(url, payload)
+    if not url or url == "" then return false end
+    local body = HttpService:JSONEncode(payload)
+    local headers = {["Content-Type"] = "application/json"}
+    local req = (syn and syn.request) or (http and http.request) or request
+    if req then
+        local ok, res = pcall(function()
+            return req({Url = url, Method = "POST", Headers = headers, Body = body})
+        end)
+        return ok and (res and (res.Success ~= false))
+    end
+    return false
+end
+
+-- HopServer (low and full) - uses Roblox games API similar to original
+AllFuncs.HopServer = function(FullServer)
+    task.spawn(function()
+        local ok, servers
+        local placeId = game.PlaceId
+        local api = string.format("https://games.roblox.com/v1/games/%d/servers/Public?sortOrder=Desc&limit=100", placeId)
+        pcall(function()
+            local raw = game:HttpGet(api)
+            local parsed = HttpService:JSONDecode(raw)
+            if parsed and parsed.data then
+                for _, s in pairs(parsed.data) do
+                    if type(s) == "table" and s.playing and s.maxPlayers and s.playing < s.maxPlayers and s.id ~= game.JobId then
+                        table.insert(servers or {}, s.id)
+                    end
+                end
+            end
+        end)
+        if servers and #servers > 0 then
+            TeleportService:TeleportToPlaceInstance(placeId, servers[math.random(1,#servers)], LocalPlayer)
+        else
+            -- fallback: rejoin same server
+            TeleportService:TeleportToPlaceInstance(placeId, game.JobId, LocalPlayer)
+        end
+    end)
+end
+
+-- Core feature implementations
+
+-- FARM FISH (Auto farm loop) - simplified, follows original events
+AllFuncs["Farm Fish"] = function()
+    -- This function expects: ReplicatedStorage.playerstats[LocalPlayer.Name].Stats.rod.Value exists
+    local rodName
+    pcall(function()
+        rodName = ReplicatedStorage:WaitForChild("playerstats")[LocalPlayer.Name].Stats.rod.Value
+    end)
+    if not rodName then
+        Notify("Farm Fish", "Cannot find rod name", 4)
+        return
+    end
+    while Config["Farm Fish"] do
+        pcall(function()
+            -- Equip rod if in backpack
+            local bp = LocalPlayer:FindFirstChild("Backpack") or LocalPlayer:WaitForChild("Backpack")
+            if bp:FindFirstChild(rodName) then
+                LocalPlayer.Character.Humanoid:EquipTool(bp:FindFirstChild(rodName))
+            end
+            -- If rod has bobber (already cast), wait for bite
+            if LocalPlayer.Character:FindFirstChild(rodName) and LocalPlayer.Character:FindFirstChild(rodName):FindFirstChild("bobber") then
+                -- wait until bite value true or until toggle disabled
+                local rod = LocalPlayer.Character:FindFirstChild(rodName)
+                repeat
+                    task.wait(0.1)
+                until not Config["Farm Fish"] or not rod or (rod.values and rod.values.bite and rod.values.bite.Value)
+                if not Config["Farm Fish"] then break end
+                -- finish reeling
+                if ReplicatedStorage:FindFirstChild("events") and ReplicatedStorage.events:FindFirstChild("reelfinished") then
+                    ReplicatedStorage.events.reelfinished:FireServer(1e18, true)
+                end
+            else
+                -- cast
+                if LocalPlayer.Character:FindFirstChild(rodName) and LocalPlayer.Character:FindFirstChild(rodName).events and LocalPlayer.Character:FindFirstChild(rodName).events.cast then
+                    LocalPlayer.Character:FindFirstChild(rodName).events.cast:FireServer(1e18)
+                end
+            end
+        end)
+        task.wait(0.5)
+    end
+end
+
+-- SELL FISH (loop)
+AllFuncs["Sell Fish"] = function()
+    while Config["Sell Fish"] do
+        pcall(function()
+            if ReplicatedStorage:FindFirstChild("events") and ReplicatedStorage.events:FindFirstChild("selleverything") then
+                ReplicatedStorage.events.selleverything:InvokeServer()
+            end
+        end)
+        task.wait(3)
+    end
+end
+
+-- AUTO FIND BOAT / EVENT (simplified implementation)
+AllFuncs["Auto Find Boat Event"] = function()
+    while Config["Auto Find Boat Event"] do
+        -- search workspace.active for ingredient names
+        local found = false
+        for _, child in pairs(workspace.active:GetChildren()) do
+            if child:IsA("BasePart") or child.PrimaryPart then
+                -- match by name in Ingredient list
+                if Config["Ingredient List"] and type(Config["Ingredient List"]) == "table" then
+                    for _, ing in pairs(Config["Ingredient List"]) do
+                        if child.Name == ing then
+                            found = true
+                            -- teleport and pick up
+                            pcall(function()
+                                LocalPlayer.Character.HumanoidRootPart.CFrame = child:GetPivot()
+                                if child:FindFirstChild("PickupPrompt") then
+                                    fireproximityprompt(child.PickupPrompt, 1)
+                                elseif child:FindFirstChildOfClass("ProximityPrompt") then
+                                    fireproximityprompt(child:FindFirstChildOfClass("ProximityPrompt"), 1)
+                                end
+                            end)
+                            break
+                        end
+                    end
+                end
+            end
+            if found then break end
+        end
+        if not found then
+            if Config["Hop Not Found Ingredient"] then
+                AllFuncs.HopServer(true)
+            end
+        end
+        task.wait(0.75)
+    end
+end
+
+-- TELEPORT TO SELECTED POSITION
+AllFuncs["To Pos Stand"] = function()
+    while Config["To Pos Stand"] do
+        if not Config["SelectPositionStand"] then
+            Notify("Select position first")
+            Config["To Pos Stand"] = false
+            break
+        end
+        pcall(function()
+            LocalPlayer.Character.HumanoidRootPart.CFrame = Config["SelectPositionStand"]
+        end)
+        task.wait(0.7)
+    end
+end
+
+-- WALK SPEED / JUMP / NOCLIP toggles
+AllFuncs["Toggle Walk Speed"] = function()
+    while Config["Toggle Walk Speed"] do
+        pcall(function()
+            LocalPlayer.Character.Humanoid.WalkSpeed = (Config["Set Walk Speed"] or 16)
+        end)
+        task.wait(0.25)
+    end
+    pcall(function() LocalPlayer.Character.Humanoid.WalkSpeed = 16 end)
+end
+
+AllFuncs["Toggle Jump Power"] = function()
+    while Config["Toggle Jump Power"] do
+        pcall(function()
+            LocalPlayer.Character.Humanoid.JumpPower = (Config["Set Jump Power"] or 50)
+        end)
+        task.wait(0.25)
+    end
+    pcall(function() LocalPlayer.Character.Humanoid.JumpPower = 50 end)
+end
+
+AllFuncs["Toggle Noclip"] = function()
+    while Config["Toggle Noclip"] do
+        pcall(function()
+            for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide = false end
+            end
+        end)
+        task.wait(0.5)
+    end
+    pcall(function()
+        for _, v in pairs(LocalPlayer.Character:GetDescendants()) do
+            if v:IsA("BasePart") then v.CanCollide = true end
+        end
+    end)
+end
+
+-- SENDING WEBHOOK (periodic) simplified
+AllFuncs["Sending Webhook"] = function()
+    local last = tick()
+    while Config["Sending Webhook"] do
+        if tick() - last >= (tonumber(Config["Delay Sending"]) or 60) then
+            last = tick()
+            local des = "Nil Hub Notification\nPlayer: "..LocalPlayer.Name
+            if Config["Current Level"] then
+                des = des .. "\nLevel: "..tostring(LocalPlayer.leaderstats and LocalPlayer.leaderstats.Level and LocalPlayer.leaderstats.Level.Value or "N/A")
+            end
+            if Config["Current Money"] then
+                local coins = PlayerGui:FindFirstChild("hud") and PlayerGui.hud.safezone.coins and PlayerGui.hud.safezone.coins.Text or "N/A"
+                des = des .. "\nMoney: "..tostring(coins)
+            end
+            local ok = sendWebhook(Config["Webhook URL"] or "", {content = des})
+            Notify("Webhook", ok and "Sent" or "Failed")
+        end
+        task.wait(1)
+    end
+end
+
+-- INFO FISH helpers
+local FishList = {}
+for k,_ in pairs(FISHDATA) do table.insert(FishList, k) end
+
+-- UI BUILD using Obsidian
+local Window = Obsidian:CreateWindow({
+    Title = "Nil | Hub",
+    SubTitle = "Fisch (Obsidian)",
+    Size = {Width = 800, Height = 500}
+})
+
+local Tabs = {}
+Tabs.General = Window:AddTab({Title = "Generals"})
+Tabs.Event = Window:AddTab({Title = "Event"})
+Tabs.Player = Window:AddTab({Title = "Player"})
+Tabs.Shop = Window:AddTab({Title = "Shop"})
+Tabs.Info = Window:AddTab({Title = "Info"})
+Tabs.Settings = Window:AddTab({Title = "Settings"})
+Tabs.Teleport = Window:AddTab({Title = "Teleport"})
+
+-- General Tab
+local genSec = Tabs.General:AddSection({Title = "Farming"})
+
+genSec:AddToggle({Title = "Auto Farm Fish", Default = Config["Farm Fish"] or false, Description = "Automatically cast/reel fish"})
+:OnChanged(function(v)
+    Config["Farm Fish"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Farm Fish"]) end
+end)
+
+genSec:AddToggle({Title = "Auto Sell Fish", Default = Config["Sell Fish"] or false})
+:OnChanged(function(v)
+    Config["Sell Fish"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Sell Fish"]) end
+end)
+
+genSec:AddButton({Title = "Sell All Fish"}):OnClick(function()
+    pcall(function() ReplicatedStorage.events.selleverything:InvokeServer() end)
+end)
+
+-- Event Tab
+local evSec = Tabs.Event:AddSection({Title = "Events"})
+
+evSec:AddToggle({Title = "Auto Find Boat Event", Default = Config["Auto Find Boat Event"] or false})
+:OnChanged(function(v)
+    Config["Auto Find Boat Event"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Auto Find Boat Event"]) end
+end)
+
+evSec:AddToggle({Title = "Hop Not Found Ingredient", Default = Config["Hop Not Found Ingredient"] or false})
+:OnChanged(function(v) Config["Hop Not Found Ingredient"] = v; saveConfig() end)
+
+evSec:AddInput({Title = "Ingredient List (comma)", Placeholder = "e.g. Witches Ingredient, Pumpkin" , Default = table.concat(Config["Ingredient List"] or {}, ",")})
+:OnChanged(function(v)
+    local list = {}
+    for s in string.gmatch(v, "([^,]+)") do
+        s = s:gsub("^%s+",""):gsub("%s+$","")
+        if s ~= "" then table.insert(list, s) end
+    end
+    Config["Ingredient List"] = list
+    saveConfig()
+end)
+
+-- Player Tab
+local plySec = Tabs.Player:AddSection({Title = "Player Mods"})
+
+plySec:AddToggle({Title = "Toggle Walk Speed", Default = Config["Toggle Walk Speed"] or false})
+:OnChanged(function(v)
+    Config["Toggle Walk Speed"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Toggle Walk Speed"]) end
+end)
+
+plySec:AddSlider({Title = "Set Walk Speed", Min = 16, Max = 300, Default = Config["Set Walk Speed"] or 16})
+:OnChanged(function(v) Config["Set Walk Speed"] = v; saveConfig() end)
+
+plySec:AddToggle({Title = "Toggle Jump Power", Default = Config["Toggle Jump Power"] or false})
+:OnChanged(function(v)
+    Config["Toggle Jump Power"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Toggle Jump Power"]) end
+end)
+
+plySec:AddSlider({Title = "Set Jump Power", Min = 50, Max = 500, Default = Config["Set Jump Power"] or 50})
+:OnChanged(function(v) Config["Set Jump Power"] = v; saveConfig() end)
+
+plySec:AddToggle({Title = "Toggle Noclip", Default = Config["Toggle Noclip"] or false})
+:OnChanged(function(v)
+    Config["Toggle Noclip"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Toggle Noclip"]) end
+end)
+
+-- Misc player utilities
+local miscSec = Tabs.Player:AddSection({Title = "Misc Utilities"})
+
+miscSec:AddButton({Title = "Rejoin Server"}):OnClick(function()
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, LocalPlayer)
+end)
+
+miscSec:AddButton({Title = "Hop Server (Low)"}):OnClick(function()
+    AllFuncs.HopServer(false)
+end)
+
+miscSec:AddButton({Title = "Hop Server (Full)"}):OnClick(function()
+    AllFuncs.HopServer(true)
+end)
+
+miscSec:AddButton({Title = "Anti Lag (Once)"}):OnClick(function()
+    for _, v in pairs(game:GetDescendants()) do
+        if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+            if v.Transparency ~= 1 then v.Material = Enum.Material.SmoothPlastic end
+        elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+            v:Destroy()
+        end
+    end
+    Notify("Anti Lag", "Completed")
+end)
+
+-- Shop Tab
+local shopSec = Tabs.Shop:AddSection({Title = "Shop"})
+shopSec:AddToggle({Title = "Teleport To Buy", Default = Config["Teleport To Buy"] or false})
+:OnChanged(function(v) Config["Teleport To Buy"] = v; saveConfig() end)
+
+shopSec:AddButton({Title = "Show Buy UI"}):OnClick(function()
+    pcall(function() PlayerGui.hud.safezone.shipwright.Visible = not PlayerGui.hud.safezone.shipwright.Visible end)
+end)
+
+-- Info Tab
+local infoSec = Tabs.Info:AddSection({Title = "Fish Info"})
+
+local fishDropdown = infoSec:AddDropdown({Title = "Select Fish", Values = FishList, Default = Config["Select Fish Info"] or FishList[1]})
+:OnChanged(function(v) Config["Select Fish Info"] = v; saveConfig() end)
+
+infoSec:AddButton({Title = "Get Info Fish"}):OnClick(function()
+    local sel = Config["Select Fish Info"]
+    if not sel or sel == "" then Notify("Info Fish", "Pls Select Fish") return end
+    local d = FISHDATA[sel]
+    if d then
+        Notify("Fish Info", string.format("Name: %s\nPrice: %s\nRarity: %s\nChance: %s\nFavourite Bait: %s", sel, tostring(d.Price or "N/A"), tostring(d.Rarity or "N/A"), tostring(d.Chance or "N/A"), tostring(d.FavouriteBait or "N/A")), 6)
+    else
+        Notify("Fish Info", "Data not found for "..sel)
+    end
+end)
+
+-- Teleport Tab
+local tpSec = Tabs.Teleport:AddSection({Title = "Teleport"})
+
+tpSec:AddButton({Title = "Save Position"}):OnClick(function()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        Config["SavedPos"] = LocalPlayer.Character.HumanoidRootPart.CFrame
+        saveConfig()
+        Notify("Teleport", "Position saved")
+    else
+        Notify("Teleport", "No position found")
+    end
+end)
+
+tpSec:AddButton({Title = "Teleport To Saved"}):OnClick(function()
+    if Config["SavedPos"] then
+        pcall(function() LocalPlayer.Character.HumanoidRootPart.CFrame = Config["SavedPos"] end)
+    else
+        Notify("Teleport", "No saved position")
+    end
+end)
+
+-- Settings Tab - webhook & config
+local setSec = Tabs.Settings:AddSection({Title = "Settings"})
+
+setSec:AddInput({Title = "Webhook URL", Placeholder = "Webhook URL...", Default = Config["Webhook URL"] or ""})
+:OnChanged(function(v) Config["Webhook URL"] = v; saveConfig() end)
+
+setSec:AddToggle({Title = "Sending Webhook", Default = Config["Sending Webhook"] or false})
+:OnChanged(function(v)
+    Config["Sending Webhook"] = v; saveConfig()
+    if v then task.spawn(AllFuncs["Sending Webhook"]) end
+end)
+
+setSec:AddInput({Title = "Delay Sending (sec)", Placeholder = "60", Default = tostring(Config["Delay Sending"] or 60)})
+:OnChanged(function(v) Config["Delay Sending"] = tonumber(v) or 60; saveConfig() end)
+
+-- Finalize: auto-save when window closes (if supported)
+if Window and Window.OnClose then
+    Window.OnClose:Connect(function()
+        saveConfig()
+    end)
+end
+
+Notify("Nil Hub (Obsidian)", "Loaded UI. Select options to start.")
+
+-- ensure any toggles that were enabled at load start their loops
+if Config["Farm Fish"] then task.spawn(AllFuncs["Farm Fish"]) end
+if Config["Sell Fish"] then task.spawn(AllFuncs["Sell Fish"]) end
+if Config["Auto Find Boat Event"] then task.spawn(AllFuncs["Auto Find Boat Event"]) end
+if Config["Toggle Walk Speed"] then task.spawn(AllFuncs["Toggle Walk Speed"]) end
+if Config["Toggle Jump Power"] then task.spawn(AllFuncs["Toggle Jump Power"]) end
+if Config["Toggle Noclip"] then task.spawn(AllFuncs["Toggle Noclip"]) end
+if Config["Sending Webhook"] then task.spawn(AllFuncs["Sending Webhook"]) end
+
+-- End of Obsidian rewrite
