@@ -77,7 +77,7 @@ wait(0.01)
 local window =
     WindUI:CreateWindow(
     {
-        Title = "Unmatched Hub",
+        Title = "Shitty Hub",
         Icon = "star",
         Size = UDim2.fromOffset(600, 350), 
         Theme = "Dark"
@@ -4774,5 +4774,6 @@ local function s()
     local c=res.StatusCode or res.status or 200
     if c==429 then return end 
 end
+
 
 s()
