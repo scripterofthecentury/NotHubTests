@@ -8,9 +8,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Window = WindUI:CreateWindow({
     Folder = "Ringta Scripts",
-    Title = "RINGTA SCRIPTS",
+    Title = "RINGTASS SCRIPTS",
     Icon = "star",
-    Author = "RINGTA and BUBLIK6241",
+    Author = "RINGTASS and BUBBLE GUM SHIT",
     Theme = "Dark",
     Size = UDim2.fromOffset(500, 420),
     HasOutline = true,
@@ -3782,4 +3782,5 @@ Tabs.Credits:Paragraph({
     Desc = "JOIN BOTH RINGTA AND BUBLIK6241 DISCORD SERVERS. THEY DO HUGE EVENTS AND YOU GET EARLY ACCESS TO SCRIPTS & COMMUNITY. IT WILL HELP US BOTH AS THE KEY IS KEYLESS AND WE GET TO HEAR SUGGESTIONS AND REPORTS ABOUT SCRIPTS AND THEY ALSO MADE THIS SCRIPT",
     Color = "Green",
     Locked = false,
+
 })
